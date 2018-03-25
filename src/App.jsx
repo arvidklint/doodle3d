@@ -1,9 +1,9 @@
 import React from 'react'
 
+import Viewer from './components/Viewer/Viewer'
+
 const App = () => (
-  <div>
-    Hello, world!
-  </div>
+  <Viewer />
 )
 
 export default App

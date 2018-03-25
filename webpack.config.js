@@ -1,6 +1,7 @@
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 
 module.exports = {
+  devtool: 'cheap-module-source-map',
   module: {
     rules: [
       {
@@ -33,6 +34,13 @@ module.exports = {
             }
           },
         ],
+      },
+      {
+        test: /\.obj$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'webpack-obj-loader'
+        }
       },
     ],
   },
