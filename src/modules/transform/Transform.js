@@ -20,11 +20,16 @@ class Transform {
       x,
       y,
       z,
+      matrix,
     } = finalParams
 
-    const position = vec3.fromValues(x, y, z)
-    this.matrix = mat4.create()
-    mat4.fromTranslation(this.matrix, position)
+    if (matrix) {
+      this.matrix = matrix
+    } else {
+      const position = vec3.fromValues(x, y, z)
+      this.matrix = mat4.create()
+      mat4.fromTranslation(this.matrix, position)
+    }
   }
 
   translate(x, y, z) {
@@ -40,6 +45,13 @@ class Transform {
     const inverted = mat4.create()
     mat4.invert(inverted, this.matrix)
     return inverted
+  }
+
+  copy() {
+    const t = mat4.clone(this.matrix)
+    return new Transform({
+      matrix: t,
+    })
   }
 }
 

@@ -5,7 +5,9 @@ import Camera from '../camera/Camera'
 import vertexShaderSource from '../../shaders/vertex'
 import fragmentShaderSource from '../../shaders/fragment'
 
-import cube from '../../obj/cube.obj'
+import cubeGenerator from '../buffers/cubeGenerator'
+
+import Part from '../part/Part'
 
 class View {
   constructor(canvas) {
@@ -23,43 +25,68 @@ class View {
 
     this.program = this.app.createProgram(vertexShaderSource, fragmentShaderSource)
 
-    
-    const positions = this.app.createVertexBuffer(PicoGL.FLOAT, 3, new Float32Array(cube.vertices))
-    const normals = this.app.createVertexBuffer(PicoGL.FLOAT, 3, new Float32Array(cube.vertexNormals))
-    const indices = this.app.createIndexBuffer(PicoGL.UNSIGNED_SHORT, 3, new Uint16Array(cube.indices))
+    const vertices = cubeGenerator({
+      size: 1,
+      pivot: {
+        x: 0.5,
+        y: 0.5,
+        z: 0.5,
+      },
+    })
+
+    this.part = new Part({
+      vertices,
+    })
+
+    this.run = this.run.bind(this)
+    this.draw = this.draw.bind(this)
+  }
+
+  setBuffers(part) {
+    const positions = this.app.createVertexBuffer(PicoGL.FLOAT, 3, new Float32Array(part.vertices))
 
     const vertexArray = this.app.createVertexArray()
       .vertexAttributeBuffer(0, positions)
-      .vertexAttributeBuffer(1, normals)
-      .indexBuffer(indices)
 
     this.uniformBuffer = this.app.createUniformBuffer([
       PicoGL.FLOAT_MAT4,
       PicoGL.FLOAT_MAT4,
     ])
 
+
+    this.modelBuffer = this.app.createUniformBuffer([
+      PicoGL.FLOAT_MAT4,
+    ])
+
     this.drawCall = this.app.createDrawCall(this.program, vertexArray)
       .uniformBlock('CameraUniforms', this.uniformBuffer)
-
-    this.run = this.run.bind(this)
-    this.draw = this.draw.bind(this)
+      .uniformBlock('ModelUniforms', this.modelBuffer)
   }
 
   run() {
-    this.draw()
+    this.app.clear()
+    this.camera.update()
+    this.draw(this.part)
     window.requestAnimationFrame(this.run)
   }
 
-  draw() {
-    this.camera.update()
-    this.app.clear()
+  draw(part) {
+    this.setBuffers(part)
 
     this.uniformBuffer
       .set(0, this.camera.viewMatrix)
       .set(1, this.camera.projectionMatrix)
       .update()
+    
+    this.modelBuffer
+      .set(0, part.transform.matrix)
+      .update()
 
     this.drawCall.draw()
+
+    if(part.child) {
+      this.draw(part.child)
+    }
   }
 }
 
