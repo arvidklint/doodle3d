@@ -2,19 +2,25 @@ import Transform from '../transform/Transform'
 
 class Part {
   constructor({
-    vertices,
+    indices,
+    normals,
     recursionCount = 10,
     transform,
+    vertices,
   }) {
     this.transform = transform || new Transform()
     this.vertices = vertices
+    this.normals = normals
+    this.indices = indices
     if (recursionCount > 0) {
       const newTransform = this.transform.copy()
       newTransform.translate(0.1, 0.1, 0)
       this.child = new Part({
-        vertices,
+        indices,
+        normals,
         recursionCount: recursionCount - 1,
         transform: newTransform,
+        vertices,
       })
     }
 

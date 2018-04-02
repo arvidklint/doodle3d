@@ -1,6 +1,6 @@
-const HtmlWebPackPlugin = require('html-webpack-plugin')
+const HtmlWebPackPlugin = require('html-webpack-plugin') // eslint-disable-line no-undef
 
-module.exports = {
+module.exports = { // eslint-disable-line no-undef
   devtool: 'cheap-module-source-map',
   module: {
     rules: [

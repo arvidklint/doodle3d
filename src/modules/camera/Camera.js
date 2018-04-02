@@ -58,6 +58,10 @@ class Camera {
     this.cameraMatrix.translate(x, y, z)
   }
 
+  lookAt(x, y, z) {
+    this.cameraMatrix.lookAt(x, y, z)
+  }
+
   update() {
     // UPDATE CAMERA
     const speed = 0.1

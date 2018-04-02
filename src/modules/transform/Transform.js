@@ -37,8 +37,25 @@ class Transform {
     mat4.translate(this.matrix, this.matrix, delta)
   }
 
+  get position() {
+    const t = vec3.create()
+    mat4.getTranslation(t, this.matrix)
+    return t
+  }
+
   rotateY(value) {
     mat4.rotateY(this.matrix, this.matrix, value)
+  }
+
+  lookAt(x, y, z) {
+    console.log(this.matrix)
+    console.log(this.position)
+    const la = mat4.create()
+    mat4.targetTo(this.matrix, this.position, vec3.fromValues(x, y, z), vec3.fromValues(0, 1, 0))
+    console.log(la)
+    // mat4.multiply(this.matrix, la, this.matrix)
+    console.log(this.position)
+    console.log(this.matrix)
   }
 
   get invert() {

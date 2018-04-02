@@ -2,10 +2,12 @@ import PicoGL from 'picogl'
 
 import Camera from '../camera/Camera'
 
-import vertexShaderSource from '../../shaders/vertex'
-import fragmentShaderSource from '../../shaders/fragment'
+import vertexShaderSource from '../../shaders/basicLight/vertex'
+import fragmentShaderSource from '../../shaders/basicLight/fragment'
 
 import cubeGenerator from '../buffers/cubeGenerator'
+
+import cube from '../../obj/cube.obj'
 
 import Part from '../part/Part'
 
@@ -19,7 +21,8 @@ class View {
       zFar: 1000,
       aspect: this.canvas.clientWidth / this.canvas.clientHeight,
     })
-    this.camera.translate(0, 0, 4)
+    this.camera.translate(0, 10, 0)
+    this.camera.lookAt(0, 0, 0)
 
     this.app = PicoGL.createApp(this.canvas).clearColor(0.0, 0.0, 0.0, 1.0).defaultViewport().depthTest()
 
@@ -35,32 +38,45 @@ class View {
     })
 
     this.part = new Part({
-      vertices,
+      vertices: cube.vertices,
+      normals: cube.vertexNormals,
+      indices: cube.indices,
     })
+
+    this.lightBuffer = this.app.createUniformBuffer([
+      PicoGL.FLOAT_VEC3,
+    ]).set(0, new Float32Array([
+      10, 10, -10,
+    ])).update()
 
     this.run = this.run.bind(this)
     this.draw = this.draw.bind(this)
   }
 
   setBuffers(part) {
+    // console.log(part)
     const positions = this.app.createVertexBuffer(PicoGL.FLOAT, 3, new Float32Array(part.vertices))
+    const normals = this.app.createVertexBuffer(PicoGL.FLOAT, 3, new Float32Array(part.normals))
+    const indices = this.app.createIndexBuffer(PicoGL.UNSIGNED_SHORT, 3, new Uint16Array(part.indices))
 
     const vertexArray = this.app.createVertexArray()
       .vertexAttributeBuffer(0, positions)
+      .vertexAttributeBuffer(1, normals)
+      .indexBuffer(indices)
 
-    this.uniformBuffer = this.app.createUniformBuffer([
+    this.cameraBuffer = this.app.createUniformBuffer([
       PicoGL.FLOAT_MAT4,
       PicoGL.FLOAT_MAT4,
     ])
-
 
     this.modelBuffer = this.app.createUniformBuffer([
       PicoGL.FLOAT_MAT4,
     ])
 
     this.drawCall = this.app.createDrawCall(this.program, vertexArray)
-      .uniformBlock('CameraUniforms', this.uniformBuffer)
+      .uniformBlock('CameraUniforms', this.cameraBuffer)
       .uniformBlock('ModelUniforms', this.modelBuffer)
+      .uniformBlock('LightUniforms', this.lightBuffer)
   }
 
   run() {
@@ -73,7 +89,7 @@ class View {
   draw(part) {
     this.setBuffers(part)
 
-    this.uniformBuffer
+    this.cameraBuffer
       .set(0, this.camera.viewMatrix)
       .set(1, this.camera.projectionMatrix)
       .update()
